@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+    <META HTTP-EQUIV="Expires" CONTENT="-1">
+
+    <!--    <link rel="stylesheet" href="style.css" type="text/css" media="screen">  -->
+    <script src="javascript/jquery.js"></script>
+    <script type="text/javascript" src="javascript/tools.js" ></script> 
+    <script type="text/javascript" src="javascript/RooView.js" ></script> 
+    <script type="text/javascript" src="javascript/jquery.validate.min.js" ></script> 
+    <script type="text/javascript" src="javascript/FormValidate.js" ></script> 
+    
+  </head>
+
+
+  <body >
+
+    <?php echo "Bob"; ?> 
+    <div id="BodyTitle" style="text-align: center; padding: 10px;"> RooView </div>
+
+    <!-- change Menu div width to 1000px when you remove debug borders -->
+    <div id="Menu" style="width: 1104px; margin: auto;  text-align: center; border: 1px solid green;" >
+      
+      <!-- The Form to choose the Plot Type -->
+      <div id="PlotTypeForm" style="width: 200px; margin: auto;">
+	<div  style="text-align: center;">
+	  Type of Plot: <br>
+	  <select name="PlotTypeSelect" id="PlotTypeSelect">
+            <option id="DataMCPlot"> Data/MC Plot   </option>
+            <option id="DataMCTable"> Data/MC Table </option>
+            <option id="CutFlowPlot"> Cut Flow Plot </option>
+	  </select>                 
+	</div>
+	<div style="width: 100%;clear: both;"></div>
+	<div style="text-align: center;">
+	  <button id="SelectPlotType" >Select Plot Type </button>
+	</div>
+      </div>
+
+      <!-- The Plot Type summary which appears once the plot type is chosen -->
+      <div id="PlotTypeSummary" style="width: 250px; border:1px solid black; text-align: center; margin: auto;  padding: 10px;">
+	<div id="PlotTypeLabel"> </div>
+	<button id="ChangePlotType"> Change Plot Type </button>
+      </div>
+
+      
+      <div id="SampleMenu" style="width: 550px; border: 1px solid red; float: left;">
+	
+	<div id="DataSampleForms" style="text-align: center;"> 
+	  <form name="DataSampleForm" id="DataSampleForm">
+	    <label>Data Name: </label> <input type="text" name="Name">
+	    <label>File:      </label> <input type="text" name="File">
+	    <label>Lumi:      </label> <input type="text" name="Lumi" id="Lumi" style="width: 40px; ">
+	  </form>	
+	</div>
+
+	<div id="MCSampleForms" style="text-align: center;"> </div>
+	
+	<div id="SampleListSummary" > </div>
+
+	<button id="NewSample" > New Sample </button>
+	<button id="ClearSamples" > Clear Samples </button>
+
+	<br>
+
+	<button id="SubmitSamples" style="margin: auto;" > Submit </button>
+	<button id="UpdateSamples" style="margin: auto;" > Update </button>
+
+      </div> <!-- End Sample Menu -->
+
+
+      <div id="VarCutForm" style="width: 550px; border: 1px solid blue; float: right;" >
+
+	<!-- The form to select the Variables and Cuts to show -->
+	<!-- <div id="VarCutForm" style="width: 350px; margin: auto; margin-top: 10px; border:1px solid black; padding: 10px;"> -->
+
+	<div id="ChannelDiv" style="float: left; text-align: left; margin-right: 20px; margin-left: 20px;">
+	  Channels: <br>
+	  <form id="ChannelCheckbox" style="float: left;" ></form>
+	  <div style="width: 100%; clear: both; margin-top: 10px;"></div>
+	  <!--<button id="SelectChannels"> Select Channels </button>-->
+	</div> <!-- End Cuts: Checkbox -->
+
+	<div id="VariableDiv" style="float: left; text-align: left; margin-right: 20px; margin-left: 20px;">
+	  Variables: <br>
+	  <form id="VariableCheckbox" ></form>
+	</div> <!-- End Variables: Checkbox -->
+
+	<div id="CutDiv" style="float: left; text-align: left;  margin-right: 20px; margin-left: 20px;">
+	  Cuts: <br>
+	  <form id="CutCheckbox" style="float: left;" ></form>
+	</div> <!-- End Cuts: Checkbox -->
+
+	<div style="width: 100%; clear: both; margin-top: 10px;"></div>
+
+	<div style="text-align: center;">
+	  <button id="MakePlots" > Make Plots </button>
+	</div>
+
+      </div> <!-- End Var Cut Form -->
+
+    </div> <!-- End the Menu -->      
+
+    <!-- End the "floaty" ness" -->
+    <div style="width: 100%;clear: both;"></div>
+
+    <br>
+
+    <div style="width: 500; margin:auto; text-align: center;">
+      <br>
+      <div id="PlotTables" > </div>
+    </div>
+
+    <button id="ToggleDebug"> Debug Stream </button>
+    <div id="results"></div>
+    <div id="debug">DebugStream: <br>  </div>
+
+  </body>
+
+</html>
+
+
+
