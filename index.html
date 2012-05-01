@@ -6,7 +6,13 @@
     <META HTTP-EQUIV="Expires" CONTENT="-1">
 
     <!--    <link rel="stylesheet" href="style.css" type="text/css" media="screen">  -->
-    <script src="javascript/jquery.js"></script>
+
+    <link rel="stylesheet" href="style/base.css" type="text/css" media="screen">
+    <link rel="stylesheet" href="style/style.css" type="text/css" media="screen">
+
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+    <!--<script src="javascript/jquery.js"></script>-->
     <script type="text/javascript" src="javascript/tools.js" ></script> 
     <script type="text/javascript" src="javascript/RooView.js" ></script> 
     <script type="text/javascript" src="javascript/jquery.validate.min.js" ></script> 
@@ -21,7 +27,7 @@
     <div id="BodyTitle" style="text-align: center; padding: 10px;"> RooView </div>
 
     <!-- change Menu div width to 1000px when you remove debug borders -->
-    <div id="Menu" style="width: 1104px; margin: auto;  text-align: center; border: 1px solid green;" >
+    <div id="Menu" style="width: 1104px; margin: auto;  text-align: center; " >
       
       <!-- The Form to choose the Plot Type -->
       <div id="PlotTypeForm" style="width: 200px; margin: auto;">
@@ -40,28 +46,31 @@
       </div>
 
       <!-- The Plot Type summary which appears once the plot type is chosen -->
-      <div id="PlotTypeSummary" style="width: 250px; border:1px solid black; text-align: center; margin: auto;  padding: 10px;">
+      <div id="PlotTypeSummary" style="width: 250px; text-align: center; margin: auto;  padding: 10px;">
 	<div id="PlotTypeLabel"> </div>
 	<button id="ChangePlotType"> Change Plot Type </button>
       </div>
 
       
-      <div id="SampleMenu" style="width: 550px; border: 1px solid red; float: left;">
+      <div id="SampleMenu" style="width: 550px; float: left;">
 	
-	<div id="DataSampleForms" style="text-align: center;"> 
-	  <form name="DataSampleForm" id="DataSampleForm">
-	    <label>Data Name: </label> <input type="text" name="Name">
-	    <label>File:      </label> <input type="text" name="File">
-	    <label>Lumi:      </label> <input type="text" name="Lumi" id="Lumi" style="width: 40px; ">
+	<div id="DataSampleForms" class="dataSampleBox" > 
+	  <!--
+	  <form name="DataSampleForm" id="DataSampleForm" class="dataSampleForm" >
+	    <label class="dataLabel" >Data Name: </label> <input class="dataInput" type="text" name="Name">
+	    <label class="dataLabel" >File:      </label> <input class="dataInput" type="text" name="File">
+	    <label class="dataLabel" >Lumi:      </label> <input class="dataInput" type="text" name="Lumi" id="Lumi" style="width: 40px; ">
 	  </form>	
+	  -->
 	</div>
 
-	<div id="MCSampleForms" style="text-align: center;"> </div>
+	<div id="MCSampleForms" class="mcSampleBox" > </div>
 	
 	<div id="SampleListSummary" > </div>
 
 	<button id="NewSample" > New Sample </button>
 	<button id="ClearSamples" > Clear Samples </button>
+	<button id="AddFile" > Add File </button>
 
 	<br>
 
@@ -71,7 +80,7 @@
       </div> <!-- End Sample Menu -->
 
 
-      <div id="VarCutForm" style="width: 550px; border: 1px solid blue; float: right;" >
+      <div id="VarCutForm" style="width: 550px; float: right;" >
 
 	<!-- The form to select the Variables and Cuts to show -->
 	<!-- <div id="VarCutForm" style="width: 350px; margin: auto; margin-top: 10px; border:1px solid black; padding: 10px;"> -->
@@ -113,9 +122,10 @@
       <div id="PlotTables" > </div>
     </div>
 
-    <button id="ToggleDebug"> Debug Stream </button>
+    
+    <!--<button id="ToggleDebug"> Debug Stream </button>-->
     <div id="results"></div>
-    <div id="debug">DebugStream: <br>  </div>
+    <!--<div id="debug">DebugStream: <br>  </div>-->
 
   </body>
 

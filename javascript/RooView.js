@@ -2,17 +2,52 @@
 // Holder
 
 $(document).ready(function() {
-    document.getElementById("debug").innerHTML += "Starting draw.js code <br>";
+    console.log( "Starting draw.js code");
 });
 
+
+// Global Variables
+
+var ParameterList = {};
+var SampleArray = new Array();
 
 var Variables = new Array();
 var Cuts      = new Array();
 var Channels  = new Array();
 
+var ActiveVariables = new Array();
+var ActiveCuts      = new Array();
+var ActiveChannels  = new Array();
+
+var DataFiles = new Array();
+
+
+/*
+function BuildSampleList() {
+
+    // Create a JSON string of samples
+    // based on the files available 
+    // in the directory "Data"
+
+    // First, send a request to the server
+    // to get the list of files
+
+    var FileList;
+    
+    $.post( "php/ListFiles.php", {}, function(data){FileList = data;} ); 
+
+    return FileList;
+
+}
+*/
+
 function BuildVarCutForm() {
     
-    document.getElementById("debug").innerHTML += "Entering BuildVarCutForm()<br>";
+    // Using the global list variables:
+    // 'Variables', 'Cuts', and 'Channels'
+    // Build the checkbox 
+
+    console.log( "BuildVarCutForm() : Begin");
     
     // Buld the arrays, just 
     // for the example now
@@ -39,14 +74,14 @@ function BuildVarCutForm() {
     FillCheckboxFromList( "CutCheckbox",      "Cut",      Cuts );
     FillCheckboxFromList( "ChannelCheckbox",  "Channel",  Channels );
 
+    console.log( "BuildVarCutForm() : End ");
+
 }
 
-
-var ActiveVariables = new Array();
-var ActiveCuts      = new Array();
-var ActiveChannels  = new Array();
-
 function GetActiveParameters() {
+    
+    // Get the check variables in the 
+    // Cut, Channel, Var checkbox
 
     ActiveVariables = GetSelectedValues( "VariableCheckbox" );  
     ActiveCuts      = GetSelectedValues( "CutCheckbox" );  
@@ -68,24 +103,11 @@ function PlotRequest( Variable, Cut, Channel, SampleList, Lumi) {
 
 }
 
-function GetCurrentChannel() {
-    return "Dilepton_EE";
-    var select = document.getElementById("ChannelSelect");
-    var chan   = select.options[select.selectedIndex].value;
-    return chan;
-}
-
-
-function GetCurrentLumi() {
-    var LumiInput = document.getElementById("Lumi");
-    var Lumi = parseFloat( LumiInput.value );
-    return Lumi;
-}
-
 //var Channel = "Dilepton_EE";
 function MakePlots() {
 
-    document.getElementById("debug").innerHTML += "MakePlots()<br>";
+    document.getElementById("debug").innerHTML = "MakePlots()<br>";
+    //console.log( "MakePlots()<br>";
 
     // Use a jquery post to have a php
     // script call a python module
@@ -104,44 +126,54 @@ function MakePlots() {
     //                   } 
     //                }
 
+    //console.log( "Active Channels: " . ActiveChannels . "<br>";
+    //console.log( "Active Varaibles: " . ActiveVariables . "<br>";
+    //console.log( "Active Cuts: " . ActiveCuts . "<br>";
+    
+    GetActiveParameters();
+
     var PlotRequests = new Array();
 
     for(var i_chan = 0; i_chan < ActiveChannels.length; ++i_chan) {
 	for(var i_var = 0; i_var < ActiveVariables.length; ++i_var) {
 	    for(var i_cut = 0; i_cut < ActiveCuts.length; ++i_cut) {
-		
+	
+	
 		var Variable = ActiveVariables[ i_var ];
 		var Cut      = ActiveCuts[ i_cut ];
-		var ThisChan = ActiveChannels[ i_chan ];//GetCurrentChannel();
+		var ThisChan = ActiveChannels[ i_chan ]; //GetCurrentChannel();
 		var Lumi     = GetCurrentLumi();
+
+		console.log( "Adding Plot: " + Variable + " " + Cut + " " + ThisChan );
+
 		var Plot     = new PlotRequest( Variable, Cut, ThisChan, SampleArray, Lumi);
 		PlotRequests.push( Plot );
 	    }
 	}
     }
 
-    document.getElementById("debug").innerHTML += "About to Serialize JSON<br>";
+    console.log( "About to Serialize JSON");
 
     // Now serialize the class:
     var PlotRequestsJSON = JSON.stringify(PlotRequests);
     
-    document.getElementById("debug").innerHTML += "Making Request<br>";
+    console.log( "Making Request");
 
     // Submit it via jquery / AJAX
-    $.post( "MakePlots.php", {data: PlotRequestsJSON}, function(data) 
+    $.post( "php/MakePlots.php", {data : PlotRequestsJSON}, function(data) 
 	    { 
 		
 		// MUST ADD SOME WAY HERE TO CHECK
 		// IF PLOTS WERE SUCCESSFULLY MADE!!!!!!!
 		
-		document.getElementById("debug").innerHTML += "AJAX REQUEST<br>";
+		console.log( "AJAX REQUEST");
 		$('#results').html(data);
 		// Now Build the Table
 		CreateAllTables( ActiveChannels );
 	    } 
 	  );
 
-    document.getElementById("debug").innerHTML += "Request Made<br>";
+    console.log( "Request Made");
 
 }
 
@@ -171,7 +203,7 @@ function CreateAllTables( List ) {
 
 function BuildTable( ChannelName ) {
 
-    document.getElementById("debug").innerHTML += "Entering BuildTable()<br>";
+    console.log( "Entering BuildTable()");
 
     var NumRows    = ActiveCuts.length + 1;
     var NumColumns = ActiveVariables.length + 1;
@@ -184,11 +216,11 @@ function BuildTable( ChannelName ) {
     //    table.removeChild( table.firstChild );
     // } 
     
-    document.getElementById("debug").innerHTML += "Got Table<br>";
+    console.log( "Got Table");
 
     for( var i_row = 0; i_row < NumRows; ++i_row) {
 	
-	document.getElementById("debug").innerHTML += "Row Loop<br>";
+	console.log( "Row Loop");
 
 	var row = table.insertRow(i_row);
 
@@ -218,7 +250,7 @@ function BuildTable( ChannelName ) {
 
 	    // Get the image name:
 	    var name = "Plots/" + ActiveVariables[ VariableIndex ] + "_" + ChannelName + "_" +  ActiveCuts[ CutIndex ] + ".jpg";
-	    document.getElementById("debug").innerHTML += "Getting image: " + name + "<br>";
+	    console.log( "Getting image: " + name );
 	    image.src = name + '?' + new Date().getTime();
 	    image.style.border = "1px solid black";
 	    image.width = "300"; /*TableWidth / NumColumns; */
@@ -282,6 +314,63 @@ function ClearSamples() {
 
 }
 
+
+function MakeDataSample() {
+
+    var Form = document.createElement("form");
+    Form.name = "DataSampleForm";
+    //Form.setAttribute("id", "DataSampleForm");
+    Form.id = "DataSampleForm";
+    Form.className = "dataSampleForm";
+    Form.style.textAlign = "left;"
+    Form.style.margin= "auto;"
+
+    // Add the input name
+    var nameLabel = document.createElement('label')
+    nameLabel.className = "dataLabel";
+    nameLabel.appendChild(document.createTextNode("Data "));
+    nameLabel.appendChild(document.createTextNode("Name: "));
+    Form.appendChild( nameLabel );
+    var InputName = document.createElement('input');
+    InputName.className = "dataInput";
+    InputName.type = "text";
+    InputName.name = "Name";
+    Form.appendChild( InputName );
+    
+    // Add the input file
+    var fileLabel = document.createElement('label')
+    fileLabel.className = "dataLabel";
+    fileLabel.appendChild(document.createTextNode("File: "));
+    Form.appendChild( fileLabel );
+    //var InputFile = document.createElement('input');
+    var InputFile = MakeFileSelect();//document.createElement('input');
+    //InputFile.type = "text";
+    //InputFile.name = "File";
+    InputFile.className = "mcInput";
+    Form.appendChild( InputFile );
+
+    // Add the lumi
+    var lumiLabel = document.createElement('label')
+    lumiLabel.className = "dataLabel";
+    lumiLabel.appendChild(document.createTextNode("Lumi: "));
+    Form.appendChild( lumiLabel );
+    var InputLumi = document.createElement('input');
+    InputLumi.className = "mcInput";
+    InputLumi.type = "text";
+    InputLumi.name = "Lumi";
+    //InputLumi.setAttribute("id", "Lumi");
+    InputLumi.id = "Lumi";
+    InputLumi.style.width = "40px";
+    Form.appendChild( InputLumi );
+    
+    console.log("Made Data Sample Form");
+
+    return Form;
+
+
+
+}
+
 function NewMCSample() {
 
     // Clear all forms:
@@ -293,28 +382,35 @@ function NewMCSample() {
 
     // Add the input name
     var label = document.createElement('label')
+    label.className = "mcLabel";
     label.appendChild(document.createTextNode("MC "));
     label.appendChild(document.createTextNode("Name: "));
     Form.appendChild( label );
     var InputName = document.createElement('input');
+    InputName.className = "mcInput";
     InputName.type = "text";
     InputName.name = "Name";
     Form.appendChild( InputName );
     
     // Add the input file
     var label = document.createElement('label')
+    label.className = "mcLabel";
     label.appendChild(document.createTextNode("File: "));
     Form.appendChild( label );
-    var InputFile = document.createElement('input');
-    InputFile.type = "text";
-    InputFile.name = "File";
+    //var InputFile = document.createElement('input');
+    var InputFile = MakeFileSelect();//document.createElement('input');
+    //InputFile.type = "text";
+    //InputFile.name = "File";
+    InputFile.className = "mcInput";
     Form.appendChild( InputFile );
     
     // Add the input color
     var label = document.createElement('label')
+    label.className = "mcLabel";
     label.appendChild(document.createTextNode("Color: "));
     Form.appendChild( label );
     var InputColor = MakeColorSelect(); 
+    InputColor.className = "mcInput";
     Form.appendChild( InputColor );
 
     // Add a button to delete this form:
@@ -341,7 +437,7 @@ function BuildFormFromCookie( sampleListJSON, Lumi ) {
     
     for( var i = 0; i < sampleListJSON.length; i++) {
 	var SampleInList = sampleListJSON[i];
-	document.getElementById("debug").innerHTML += SampleInList.Name + " " + SampleInList.Color + "<br>";
+	console.log( SampleInList.Name + " " + SampleInList.Color );
 	
 	if( SampleInList.Name == "Data" ) {
 	    // Set the properties of the Data Form
@@ -375,14 +471,15 @@ function Sample(Name, File, Color) {
 }                
 
 
-var ParameterList;
-var SampleArray = new Array();
-
-
 function SubmitSamples() {
 
     // Take all samples in the sample form(s)
     // and use it to build the SampleArray
+    // In addition, object holding the 
+    // Channels and Variables
+  
+    // First, Validate the form
+    ValidateForm();
 
     // Clear the Sample Array
     SampleArray = [];
@@ -419,36 +516,82 @@ function SubmitSamples() {
     // POST handler
     var FileList = new Array();
 
+    console.log( "About to get properties.  SampleArray size: " + SampleArray.length );
+
     for( var i = 0; i < SampleArray.length; ++i) {
 	var String = SampleArray[i].Name + " " + SampleArray[i].File + " " + SampleArray[i].Color;
-	document.getElementById("debug").innerHTML += String + "<br>";	
+	console.log( String );	
 	FileList.push( SampleArray[i].File );
     }
 
-    // Submit it via jquery / AJAX
-    $.post( "GetParameters.php", {"FileList" : JSON.stringify(FileList) }, function(data) 
+
+    console.log( "About to get properties.  FileList size: " + FileList.length );
+
+    var AjaxRequestDone = false;
+    
+    // Now, get the parameters from these files
+    // And store them
+    $.post( "php/GetParameters.php", {"FileList" : JSON.stringify(FileList) }, function(data) 
 	    { 
-		document.getElementById("debug").innerHTML += "AJAX REQUEST<br>";
-		ParameterList = data;
+		console.log( "AJAX REQUEST");
+		//ParameterList = data;
 		$('#results').html(data);
+		console.log( "data: " + data );
+
 		var Parameters = JSON.parse(data);
+
 		// Now Build the Selection
-		Variables = string(Parameters.Variables).split(",");
-		Cuts      = Parameters.Cuts.split(",");
-		Channels  = Parameters.Channels.split(",");
-		document.getElementById("debug").innerHTML += "Setting Parameters:<br>";
-		document.getElementById("debug").innerHTML += "Variables: " + Variables  +  "<br>";
-		document.getElementById("debug").innerHTML += "Channels: " + Channels + "<br>";
-		document.getElementById("debug").innerHTML += "Cuts: " + Cuts + "<br>";
+		//Variables = string(Parameters.Variables).split(",");
+		Variables = Parameters.Variables; //.split(",");
+		Cuts      = Parameters.Cuts; //.split(",");
+		Channels  = Parameters.Channels; //.split(",");
+
+		// ParameterList["Channels"]  = Channels;
+		// ParameterList["Variables"] = Variables;
+		// ParameterList["Cuts"]      = Variables;
+
+		console.log( "Setting Parameters:");
+		console.log( "Variables: " + Variables );
+		console.log( "Channels: " + Channels );
+		console.log( "Cuts: " + Cuts );
+
+		AjaxRequestDone=true;
+
+
+		// All of this must be placed in the call back
+		// since this request is asyncronous, ie won't
+		// necessarily be processed when the javascript
+		// passes this point
+
+		BuildVarCutForm();
+		cacheCookieSamples();
+		cacheCookieLumi();
+		FixSampleList();
+		$("#NewSample").hide("fast");
+		$("#ClearSamples").hide("fast");
+		$("#AddFile").hide("fast");
+		$("#SubmitSamples").hide("fast");
+		$("#UpdateSamples").show("fast");
+		$("#MakePlots").show("fast");
+		
+		$('div#ChannelDiv').show();   
+		$('div#VariableDiv').show();   
+		$('div#CutDiv').show();   
 
 	    } 
 	  );
+
+    // Done
     
 }
 
 
 function FixSampleList() {
     
+    // Hide the Sample selectors and
+    // replace them with static text
+    // summarizing them
+
     // Hide
     $('form[name=DataSampleForm]').hide();
     $('form[name=MCSampleForm]').hide();
@@ -467,7 +610,7 @@ function FixSampleList() {
 }
 
 function DeleteSampleListSummary() {
-
+    
     var SummaryList = document.getElementById('SampleListSummary');
     SummaryList.innerHTML = "";
     //SummaryList.empty();
@@ -478,6 +621,11 @@ $(document).ready(function() {
 
     // Setup the buttons
     // and default behavior
+
+    // Ask server, async
+    DataFiles = GetDataFiles();
+
+    //while( DataFiles == undefined
 
     $('div#SampleMenu').hide();
     $('div#VarCutForm').hide();
@@ -493,43 +641,47 @@ $(document).ready(function() {
     $("#UpdateSamples").hide();
     $("#MakePlots").hide();
 
+
+    // Add the data form
+    var DataForm = document.getElementById("DataSampleForms");
+    DataForm.appendChild( MakeDataSample() );
+
+
     $("button#SelectPlotType").click(function(){
 	SelectPlotType();
     });                  
-
-/*
-    $("button#SelectChannels").click(function(){
-	SelectChannels();
-
-    });                  
-*/
 
     $("button#ChangePlotType").click(function(){
 	ChangePlotType();
     });                  
 
     $("button#MakePlots").click(function(){
-	GetActiveParameters();
+
 	MakePlots();
     });                  
 
 
     $('.DeleteFormButton').live('click', function() {
-	document.getElementById("debug").innerHTML += "Deleting Button";
+	console.log( "Deleting Button");
 	$(this).parent().remove();   
     });                  
 
-    //NewDataSample();
+    // New MC Sample();
     $("button#NewSample").click(function(){
 	var SampleForms = document.getElementById("MCSampleForms");
 	var NewForm = NewMCSample();
 	SampleForms.appendChild( NewForm );
     });                  
 
+    $("button#AddFile").click(function(){
+	// Do Nothing
+    });                  
+
     $("button#SubmitSamples").click(function(){
-	ValidateForm();
+	// ValidateForm();
 	SubmitSamples();
-	BuildVarCutForm();
+	// BuildVarCutForm();
+/*
 	cacheCookieSamples();
 	cacheCookieLumi();
 	FixSampleList();
@@ -542,7 +694,7 @@ $(document).ready(function() {
 	$('div#ChannelDiv').show();   
 	$('div#VariableDiv').show();   
 	$('div#CutDiv').show();   
-
+*/
 
     });                  
 
@@ -569,23 +721,25 @@ $(document).ready(function() {
 	//NewDataSample();
     });                  
 
+    /*
     $("button#ToggleDebug").click(function(){
 	$("#results").toggle("fast");
 	$("#debug").toggle("fast");
     });                  
-
+*/
 
 });
 
 
 $(document).ready(function() {
 
-    document.getElementById("debug").innerHTML += "Document ready<br>";
+    console.log( "Document ready");
     checkCookies();
 
     // Start
     BuildTable();
     GetActiveParameters();
+
 
 });
 

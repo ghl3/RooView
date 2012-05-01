@@ -7,6 +7,22 @@ function Clear( Element ) {
 }
 
 
+
+function GetCurrentChannel() {
+    //return "Dilepton_EE";
+    var select = document.getElementById("ChannelSelect");
+    var chan   = select.options[select.selectedIndex].value;
+    return chan;
+}
+
+
+function GetCurrentLumi() {
+    var LumiInput = document.getElementById("Lumi");
+    var Lumi = parseFloat( LumiInput.value );
+    return Lumi;
+}
+
+
 // Take a checkbox, find all things that are checked,
 // Hide all inputs that aren't checked, and keep their lables
 
@@ -36,6 +52,9 @@ function ToggleCheckbox( Checkbox ) {
 // Creat Checkbox from List:
 function FillCheckboxFromList( CheckboxName, ItemName,  List ) {
 
+
+    console.log( "Fill CheckboxFromList : " + ItemName + " Size: " + List.length);
+
     // Now Build the Variable Checkbox
     var VarCheckbox = document.getElementById( CheckboxName );
 
@@ -56,8 +75,11 @@ function FillCheckboxFromList( CheckboxName, ItemName,  List ) {
 	//	label.htmlFor = Variables[i];
 	label.appendChild(document.createTextNode(List[i]));
 	VarCheckbox.appendChild( label );
-	
+
 	VarCheckbox.innerHTML += "<br>";
+
+
+
     }
 
 }
@@ -73,7 +95,7 @@ function GetSelectedValues( CheckboxName ) {
     for( var i = 0; i < Checkbox.length; i++) {
 	var Entry = Checkbox[i];
 	if( Entry.checked ) {
- 	    document.getElementById("debug").innerHTML += "Element Loop: " + Entry.value + "<br>";
+ 	    console.log( "Element Loop: " + Entry.value);
 	    List.push( Entry.value );
 	}
     }
@@ -125,6 +147,36 @@ function ColorMap() {
 }
 
 
+function MakeSelectFromList( Name, OptionList ) {
+
+    // Make a select object with
+    // the given Name, where the
+    // list of options are the elements
+    // of the list
+
+
+    // Make the Select
+    var InputSelector = document.createElement('select');
+    InputSelector.type = "text";
+    InputSelector.name = Name;
+    InputSelector.style.width = "70px";
+
+
+    for( var i = 0; i < OptionList.length; i++ ) {
+
+	option = OptionList[i];
+
+	var objOption = document.createElement("option");
+	objOption.text  = option;
+	objOption.value = option;
+	InputSelector.add(objOption); 
+	
+    }
+
+}
+
+
+
 function MakeColorSelect() {
 
     var InputColor = document.createElement('select');
@@ -156,6 +208,68 @@ function MakeColorSelect() {
 
 }
 
+function GetDataFiles() {
+
+    // Get the list of files on the server
+    // using a http request:
+    
+    console.log("Getting Data Files");
+
+    var FileList;
+    $.post( "ListDataFiles", {}, function(data){ 
+	console.log("Getting Data Files:");
+	console.log( data );
+	FileList = data; 
+    } ); 
+    
+    // Do it this way to make it syncronous
+    $.ajax({
+	type: 'POST',
+	url: "ListDataFiles",
+	data: {},
+	success: function(data){ 
+	    console.log("Getting Data Files:");
+	    console.log( data );
+	    FileList = JSON.parse( data );
+	},
+	async: false
+    });
+
+    //$(document).ajaxStop(function() {} );
+    //$(this).unbind('ajaxStop');
+
+    console.log("Got Data Files:");
+    console.log(FileList);
+    console.log(FileList[0]);
+
+    return FileList;
+
+}
+
+function MakeFileSelect() {
+
+    // Make the node
+    var InputFile = document.createElement('select');
+    InputFile.type = "text";
+    InputFile.name = "File";
+    InputFile.width = '111px';
+    //InputFile.className = "mcInput";
+
+    // Add the options
+    console.log("Data Files:")
+    console.log(DataFiles)
+
+    for( var i = 0; i < DataFiles.length; i++ ) {
+	var objOption = document.createElement("option");
+	objOption.text  = DataFiles[i];
+	objOption.value = "Data/" + DataFiles[i];
+	InputFile.add(objOption); 
+    }
+
+    return InputFile;
+
+}
+
 
 // Cookie Tools:
 function getCookie(c_name)
@@ -184,8 +298,8 @@ function setCookie(c_name,value,exdays)
 function cacheCookieSamples() {
     var SampleString = JSON.stringify( SampleArray );
     setCookie( "sampleList", SampleString );
-    document.getElementById("debug").innerHTML += "Sent Cookie: <br>";
-    document.getElementById("debug").innerHTML += SampleString + "<br>";
+    console.log( "Sent Cookie:");
+    console.log( SampleString );
 }
 
 function cacheCookieLumi() {
@@ -196,7 +310,7 @@ function cacheCookieLumi() {
 
 function checkCookies() {
 
-    document.getElementById("debug").innerHTML += "Checking Cookies <br>";
+    console.log("Checking Cookies");
 
     var sampleListString = getCookie("sampleList");
     var sampleListJSON   = jQuery.parseJSON( sampleListString );

@@ -12,12 +12,20 @@ def MakeMCDataPlot(VarName, ChannelName, CutName, DataEvents, MCEvents,  Lumi, O
     
     # Get the files:
     DataFileName = DataEvents["File"].replace("\\","")
-    DataFile = TFile( DataFileName );
+    try:
+        DataFile = TFile( DataFileName );
+    except:
+        print "Error: Failed to open file %s" % DataFileName
+        raise IOError
 
     MCFiles = []
     for Event in MCEvents:
         MCFileName = Event["File"].replace("\\","")
-        MCFile = TFile( MCFileName );
+        try:
+            MCFile = TFile( MCFileName );
+        except:
+            print "Error: Failed to open file %s" % MCFileName
+            raise IOError
         MCFiles.append( MCFile )
 
     # Get the histograms:
@@ -25,13 +33,20 @@ def MakeMCDataPlot(VarName, ChannelName, CutName, DataEvents, MCEvents,  Lumi, O
 
 
     print "Getting plot: " + HistName + " from file: " + DataFileName
-    DataHist = DataFile.Get( HistName )
+    try:
+        DataHist = DataFile.Get( HistName )
+    except:
+        print "Failed to get hist %s from file %s" % (HistName, DataFileName)
+        raise Exception("MakeMCDataPlot - Failed to get Hist")
     DataHist.SetTitle( DataEvents["Name"] )
 
     MCHists = []
     for file in MCFiles:
         print "Getting plot: " + HistName + " from file: " + file.GetName()
-        Hist = file.Get( HistName )
+        try:
+            Hist = file.Get( HistName )
+        except:
+            print "Failed to get hist %s from file %s" % (HistName, file.GetName())
         MCHists.append( Hist )
 
     Stack = THStack("Stack", "Stack")

@@ -111,7 +111,7 @@ def GetChannels( FileName ):
 
     print DirectoryList
 
-    print "GetChannels(): Done"
+    print "Successfully Got Channels"
     return DirectoryList
 
 
@@ -130,6 +130,8 @@ def GetVariables( FileName ):
         VarNames.add( name )
 
     print list(VarNames)
+
+    print "Successfully Got Variables"
     return list(VarNames)
 
 
@@ -152,4 +154,6 @@ def GetCuts( FileName ):
 
 
     print list( ChanNames )
+    
+    print "Successfully Got Cuts"
     return list( ChanNames )

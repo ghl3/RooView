@@ -4,6 +4,7 @@
 from urlparse import parse_qs
 import ast
 import os
+import json
 
 from PlotTools.MakeMCDataPlot import *
 from PlotTools.GetParameters import *
@@ -12,32 +13,27 @@ from PlotTools.GetParameters import *
 def DefaultPost(request_body):
 
     # What to do with a generic POST request
+    # For now, essentially do nothing
 
     print "Default Post"
-    
-    requestDict = parse_qs(request_body)
-    
-    print ""
-    for (k,v) in requestDict.iteritems():
-        print "%s : %s" % (k,v)
-        print ""
-        
-    print "Got Here 2"
-    
-    firstname = requestDict.get('firstname', [''])[0] 
-    lastname  = requestDict.get('lastname', [''])[0] 
-    print "Got Here 3"
-    response_body = "%s %s" % (firstname, lastname)
-    
+    response_body = ''
     print "ResponseBody: " + response_body
-    #response_body = str(int(request_body) ** 2)
-
     return response_body
 
 
+def ListDataFiles():
+    """ List the files in the data directory """
+    print "Listing Data Files"
+    htmlReturn = ""
+    files = os.listdir("Data")
+    print "Found files: ", files
+    return json.dumps( files )
+
+
 def MakePlotsPost(request_body):
+    """ Creates a set of plots and puts them in the Plots directory
 
-
+    """
     print "Make Plots Post"
 
     try:
@@ -46,7 +42,7 @@ def MakePlotsPost(request_body):
 
         dict = parse_qs(request_body)
         
-        htmlReturn = "Properly Making Plots: <br>"
+        htmlReturn = "Properly Making Plots: <br> "
         print ""
         for (k,v) in dict.iteritems():
             item = "Form Item - %s : %s" % (k,v) 
@@ -56,7 +52,6 @@ def MakePlotsPost(request_body):
             
         if not "data" in dict:
             return "Error: Did not find 'data'"
-
 
         try: 
             PlotListJSON = dict["data"][0]
@@ -175,4 +170,5 @@ def GetParametersPost(request_body):
 
     # Success (hopefully)
 
+    print "GetParametersPost() : Success"
     return ParamJSON
