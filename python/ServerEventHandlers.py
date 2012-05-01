@@ -1,13 +1,13 @@
 
-
-#import static
-from urlparse import parse_qs
-import ast
 import os
 import json
 
-from PlotTools.MakeMCDataPlot import *
-from PlotTools.GetParameters import *
+from MakeMCDataPlot import MakePlotsPost, MakeMCDataPlot
+from GetParameters import *
+
+
+#from PlotTools.MakeMCDataPlot import MakePlotsPost, MakeMCDataPlot
+#from PlotTools.GetParameters import *
 #import PlotTools.MakePlots
 
 def DefaultPost(request_body):
@@ -21,6 +21,94 @@ def DefaultPost(request_body):
     return response_body
 
 
+def MakePostResponse( response_body, start_response ):
+    print "MakePostResponse() : Begin"
+
+    print "ResponseBody: " + response_body
+    status = '200 OK'
+    headers = [('Content-type', 'text/html')]
+    try:
+        start_response(status, headers)
+    except:
+        print "Error: Failed to start_response"
+    print "MakePostResponse() : Success"
+    return [response_body]
+
+
+
+def ServePostRequest( environ, start_response ):
+    """ Here is where we parse the POST request
+
+    Determine the type of request, and send it to
+    the proper function, and make the return
+
+    Recall:
+    environ['PATH_INFO'] is the thing requested,
+    ie 'php/GetItems.php', etc
+    """
+
+    print "Dealing with: POST"
+
+    # Print the entire request
+
+    try:
+        RequestType = environ['PATH_INFO']
+    except:
+        print "Error: ServePostRequest function found no PATH_INFO in request"
+        return MakePostResponse("0", start_response)
+
+    # Check that the content of the request exists
+    try:
+        request_body_size = int(environ['CONTENT_LENGTH'])
+        request_body = environ['wsgi.input'].read(request_body_size)
+    except (TypeError, ValueError):
+        print "Error with CONTENT_LENGTH"
+        return MakePostResponse("0", start_response)
+
+    RequestType = environ['PATH_INFO']
+
+    print "Checking POST Type: %s" % RequestType
+
+    # Make Plots
+    if( "MakePlots" in RequestType) :
+        print "POST Type: Make Plots"
+        try:
+            response_body = MakePlotsPost(request_body)
+            return MakePostResponse( response_body, start_response )
+        except:
+            print "Failed to Make Plots"
+                        
+    # Get Parameters
+    elif( "GetParameters" in RequestType) :
+        print "POST Type: Get Parameters"
+        try:
+            response_body = GetParametersPost(request_body)
+            return MakePostResponse( response_body, start_response )
+        except:
+            print "Failed to GetParameters"
+
+    # List Files
+    elif( "ListDataFiles" in RequestType) :
+        print "POST Type: List Files"
+        try:
+            response_body = ListDataFiles() #ListDataFiles(request_body)
+            return MakePostResponse( response_body, start_response )
+        except:
+            print "Failed to ListDataFiles"
+
+    # If we get here, we found a PATH_INFO but don't have a
+    # custom handler for it.  So, we just use the default
+    # This is probably an error...
+    else:
+        print "POST Type: Default"
+        response_body = DefaultPost(request_body)
+        return MakePostResponse( response_body, start_response )
+
+    
+    raise Exception( "POST HANDLER" )
+
+
+
 def ListDataFiles():
     """ List the files in the data directory """
     print "Listing Data Files"
@@ -30,145 +118,3 @@ def ListDataFiles():
     return json.dumps( files )
 
 
-def MakePlotsPost(request_body):
-    """ Creates a set of plots and puts them in the Plots directory
-
-    """
-    print "Make Plots Post"
-
-    try:
-        # What to do when the post
-        # is for MakePlots:
-
-        dict = parse_qs(request_body)
-        
-        htmlReturn = "Properly Making Plots: <br> "
-        print ""
-        for (k,v) in dict.iteritems():
-            item = "Form Item - %s : %s" % (k,v) 
-            print item
-            htmlReturn += item
-            print ""
-            
-        if not "data" in dict:
-            return "Error: Did not find 'data'"
-
-        try: 
-            PlotListJSON = dict["data"][0]
-            print "Got data: " + PlotListJSON.__class__.__name__
-            PlotListDict = ast.literal_eval( PlotListJSON )  
-        except:
-            print "Failed to Unpack 'data' dictionary"
-            return "Error Making Plots"
-        
-
-            # Loop through the dictionary and make the plots
-        
-        for PlotOrder in PlotListDict:
-            Variable = PlotOrder["Variable"]
-            Cut      = PlotOrder["Cut"]
-            Channel  = PlotOrder["Channel"]
-            Lumi     = PlotOrder["Lumi"]
-            Samples  = PlotOrder["SampleList"]
-            
-                # Separate the sample List
-            
-            MCSamples = []
-            DataSample = Samples[0]
-            for Sample in Samples:
-                if Sample["Name"] == "Data":
-                    DataSample = Sample
-                else:
-                    MCSamples.append( Sample )
-                    #DataSample = Samples["Data"]
-                    #MCSamples  = Samples
-                    #del MCSamples["Data"]
-                    
-            MakeMCDataPlot( Variable, Channel, Cut, DataSample, MCSamples, Lumi, "Plots", "" )
-    
-    except:
-        print "Failed to properly make plots"
-        return "ERROR MAKING PLOTS"
-
-    #data = dict["data"]
-
-    return htmlReturn
-
-
-def GetParametersPost(request_body):
-
-    print "Get Parameters Post"
-
-    # Print the input parameters
-    try:
-        dict = parse_qs(request_body)
-        htmlReturn = "Getting info from Files:<br>"
-        print ""
-        for (k,v) in dict.iteritems():
-            item = "Form Item - %s : %s" % (k,v) 
-            print item
-            htmlReturn += item
-            print ""
-    except:
-        print "Failed to parse Dictionary"
-
-
-    # Unpack the filelist JSON and turn into object
-    try: 
-        if not "FileList" in dict:
-            return "Error: Did not find 'FileList'"
-        FileListJSON = dict["FileList"][0]
-        print "Got FileList: " + FileListJSON.__class__.__name__
-        FileList = ast.literal_eval( FileListJSON )  
-    except:
-        print "Failed to Unpack 'FileList' dictionary"
-        return "Error Getting Parameters"
-    
-    
-    # Loop through the dictionary and make the plots
-    CommonChannelSet  = set()
-    CommonVariableSet = set()
-    CommonCutSet = set()
-
-    try:
-        for file in FileList:
-
-            # For this file, collect the names
-            # of all the parameters
-            print "Checking Parameters of file: ", file
-            
-            if not os.path.exists( file ):
-                print "File: " + file + "  doesn't exist!!"
-                print "Absolute Path: " + os.path.abspath( file )
-                print "Current wrkdir: " + os.getcwd()
-
-            for channel in GetChannels( file ):
-                CommonChannelSet.add( channel )
-
-            for variable in GetVariables( file ):
-                CommonVariableSet.add( variable)
-
-            for cut in GetCuts( file ):
-                CommonCutSet.add( cut )
-
-    except (exception):
-        print "Failed to get garameters from files", exception
-
-
-    # Turn the sets of parameters into a JSON object
-    try:
-        ParamDict = {}
-        ParamDict["Channels"]  = list( CommonChannelSet )
-        ParamDict["Variables"] = list( CommonVariableSet )
-        ParamDict["Cuts"]      = list( CommonCutSet )
-        
-        import json
-        ParamJSON = json.dumps( ParamDict )
-        print ParamJSON
-    except: 
-        print "Failed to convert param dict to JSON object"
-
-    # Success (hopefully)
-
-    print "GetParametersPost() : Success"
-    return ParamJSON

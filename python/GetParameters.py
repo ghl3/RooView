@@ -1,9 +1,93 @@
 
+import os
+from urlparse import parse_qs
+import ast
+
+
 from ROOT import TFile, TTree, gROOT
 from ROOT import TH1
 from ROOT import THStack, TLegend
 from ROOT import TCanvas
 from ROOT import TClass
+
+def GetParametersPost(request_body):
+
+    print "Get Parameters Post"
+
+    # Print the input parameters
+    try:
+        dict = parse_qs(request_body)
+        htmlReturn = "Getting info from Files:<br>"
+        print ""
+        for (k,v) in dict.iteritems():
+            item = "Form Item - %s : %s" % (k,v) 
+            print item
+            htmlReturn += item
+            print ""
+    except:
+        print "Failed to parse Dictionary"
+
+
+    # Unpack the filelist JSON and turn into object
+    try: 
+        if not "FileList" in dict:
+            return "Error: Did not find 'FileList'"
+        FileListJSON = dict["FileList"][0]
+        print "Got FileList: " + FileListJSON.__class__.__name__
+        FileList = ast.literal_eval( FileListJSON )  
+    except:
+        print "Failed to Unpack 'FileList' dictionary"
+        raise Exception("GetParametersPost")
+    
+    
+    # Loop through the dictionary and make the plots
+    CommonChannelSet  = set()
+    CommonVariableSet = set()
+    CommonCutSet = set()
+
+    try:
+        for file in FileList:
+
+            # For this file, collect the names
+            # of all the parameters
+            print "Checking Parameters of file: ", file
+            
+            if not os.path.exists( file ):
+                print "File: " + file + "  doesn't exist!!"
+                print "Absolute Path: " + os.path.abspath( file )
+                print "Current wrkdir: " + os.getcwd()
+
+            for channel in GetChannels( file ):
+                CommonChannelSet.add( channel )
+
+            for variable in GetVariables( file ):
+                CommonVariableSet.add( variable)
+
+            for cut in GetCuts( file ):
+                CommonCutSet.add( cut )
+
+    except (exception):
+        print "Failed to get garameters from files", exception
+
+
+    # Turn the sets of parameters into a JSON object
+    try:
+        ParamDict = {}
+        ParamDict["Channels"]  = list( CommonChannelSet )
+        ParamDict["Variables"] = list( CommonVariableSet )
+        ParamDict["Cuts"]      = list( CommonCutSet )
+        
+        import json
+        ParamJSON = json.dumps( ParamDict )
+        print ParamJSON
+    except: 
+        print "Failed to convert param dict to JSON object"
+
+    # Success (hopefully)
+
+    print "GetParametersPost() : Success"
+    return ParamJSON
+
 
 
 def ContainsSubstring( String, SubStringList):

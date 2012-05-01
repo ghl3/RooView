@@ -7,6 +7,70 @@ from ROOT import THStack, TLegend
 from ROOT import TCanvas
 
 
+def MakePlotsPost(request_body):
+    """ Creates a set of plots and puts them in the Plots directory
+
+    """
+    print "Make Plots Post"
+
+    try:
+        # What to do when the post
+        # is for MakePlots:
+
+        dict = parse_qs(request_body)
+        
+        htmlReturn = "Properly Making Plots: <br> "
+        print ""
+        for (k,v) in dict.iteritems():
+            item = "Form Item - %s : %s" % (k,v) 
+            print item
+            htmlReturn += item
+            print ""
+            
+        if not "data" in dict:
+            return "Error: Did not find 'data'"
+
+        try: 
+            PlotListJSON = dict["data"][0]
+            print "Got data: " + PlotListJSON.__class__.__name__
+            PlotListDict = ast.literal_eval( PlotListJSON )  
+        except:
+            print "Failed to Unpack 'data' dictionary"
+            return "Error Making Plots"
+        
+
+            # Loop through the dictionary and make the plots
+        
+        for PlotOrder in PlotListDict:
+            Variable = PlotOrder["Variable"]
+            Cut      = PlotOrder["Cut"]
+            Channel  = PlotOrder["Channel"]
+            Lumi     = PlotOrder["Lumi"]
+            Samples  = PlotOrder["SampleList"]
+            
+                # Separate the sample List
+            
+            MCSamples = []
+            DataSample = Samples[0]
+            for Sample in Samples:
+                if Sample["Name"] == "Data":
+                    DataSample = Sample
+                else:
+                    MCSamples.append( Sample )
+                    #DataSample = Samples["Data"]
+                    #MCSamples  = Samples
+                    #del MCSamples["Data"]
+                    
+            MakeMCDataPlot( Variable, Channel, Cut, DataSample, MCSamples, Lumi, "Plots", "" )
+    
+    except:
+        print "Failed to properly make plots"
+        return "ERROR MAKING PLOTS"
+
+    return htmlReturn
+
+
+
 # Make a single plot from MC and data files
 def MakeMCDataPlot(VarName, ChannelName, CutName, DataEvents, MCEvents,  Lumi, OutputDir, Options):
     

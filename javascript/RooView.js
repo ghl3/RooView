@@ -106,7 +106,7 @@ function PlotRequest( Variable, Cut, Channel, SampleList, Lumi) {
 //var Channel = "Dilepton_EE";
 function MakePlots() {
 
-    document.getElementById("debug").innerHTML = "MakePlots()<br>";
+    console.log("MakePlots()");
     //console.log( "MakePlots()<br>";
 
     // Use a jquery post to have a php
